@@ -26,17 +26,28 @@ type testCaseSearch struct {
 	expected  SearchResults
 }
 
+var testCasesLevenschtein = []testCaseLevenschtein{
+	{testCaseCommon: testCaseCommon{word: "pineapple", comparisonWord: "apple"}, expected: 4},
+	{testCaseCommon: testCaseCommon{word: "kitten", comparisonWord: "knitting"}, expected: 3},
+	{testCaseCommon: testCaseCommon{word: "", comparisonWord: "knitting"}, expected: 8},
+}
+
 func TestLevenshteinDistance(t *testing.T) {
-	testCasesLevenschtein := []testCaseLevenschtein{
-		{testCaseCommon: testCaseCommon{word: "pineapple", comparisonWord: "apple"}, expected: 4},
-		{testCaseCommon: testCaseCommon{word: "kitten", comparisonWord: "knitting"}, expected: 3},
-		{testCaseCommon: testCaseCommon{word: "", comparisonWord: "knitting"}, expected: 8},
-	}
 	for _, test := range testCasesLevenschtein {
 		distance := calculateLevenshteinDistance(test.word, test.comparisonWord)
 
 		if distance != test.expected {
 			t.Errorf(`calculateLevenshteinDistance: the levenschtein distance is incorrect. expected: %v, got: %v`, test.expected, distance)
+		}
+	}
+}
+
+func TestLevenshteinDistanceSlower(t *testing.T) {
+	for _, test := range testCasesLevenschtein {
+		distance := calculateLevenshteinDistanceSlower(test.word, test.comparisonWord)
+
+		if distance != test.expected {
+			t.Errorf(`calculateLevenshteinDistanceSlower: the levenschtein distance is incorrect. expected: %v, got: %v`, test.expected, distance)
 		}
 	}
 }

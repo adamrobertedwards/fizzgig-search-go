@@ -15,8 +15,51 @@ type SearchResults struct {
 	total   int
 }
 
-// calculateLevenshteinDistance is a function that returns the Levenschtein Distance between two strings, by generating a full cost matrix of changes.
+// calculateLevenshteinDistance is a function that returns the Levenschtein Distance between two strings in an optimised way, by tracking and processing the previous and current row of a cost matrix.
 func calculateLevenshteinDistance(str string, comparisonStr string) int {
+	strLen, comparisonStrLen := len(str), len(comparisonStr)
+	prevRow := make([]int, comparisonStrLen+1)
+	currentRow := make([]int, comparisonStrLen+1)
+
+	// Initialise the previous row
+	for col := 0; col <= comparisonStrLen; col++ {
+		prevRow[col] = col
+	}
+
+	// Populate the matrix to calculate the distances
+	for row := 1; row <= strLen; row++ {
+		// Initialise the first column of the current row, for the "deletion" case
+		currentRow[0] = row
+
+		for col := 1; col <= comparisonStrLen; col++ {
+			substitutionCost := 1
+
+			// If the characters are equal, the cost should be 0
+			if str[row-1] == comparisonStr[col-1] {
+				substitutionCost = 0
+			}
+
+			// Calculate the minimum of either insertion, deletion or substitution
+			currentRow[col] = min(
+				currentRow[col-1]+1,
+				prevRow[col]+1,
+				prevRow[col-1]+substitutionCost,
+			)
+		}
+
+		// Swap the previous and current rows for the next iteration
+		// It's important to swap both, because without doing so, prevRow and currentRow will point
+		// to the same slice in memory which would be overwritten in the next iteration.
+		// Re-assigning is also cheaper than creating a brand new slice on each iteration
+		prevRow, currentRow = currentRow, prevRow
+	}
+
+	// The distance is stored in the last column of the prevRow, after being swapped
+	return prevRow[comparisonStrLen]
+}
+
+// calculateLevenshteinDistanceSlower is a function that returns the Levenschtein Distance between two strings in an unoptimised way, by generating a full cost matrix of changes.
+func calculateLevenshteinDistanceSlower(str string, comparisonStr string) int {
 	strLen, comparisonStrLen := len(str), len(comparisonStr)
 	matrix := make([][]int, strLen+1)
 
